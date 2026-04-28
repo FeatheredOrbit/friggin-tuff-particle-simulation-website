@@ -8,4 +8,11 @@ async function init_gpu() {
   }
 }
 
+function render() {
+  if (gpu_engine) {
+    gpu_engine.render();
+  }
+}
+
 window.document.addEventListener("DOMContentLoaded", init_gpu);
+window.document.addEventListener("click", render);
