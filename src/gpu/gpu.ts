@@ -1,7 +1,11 @@
+import { BindGroups, Textures } from './misc.ts';
+
 export class GPUEngine {
   adapter: GPUAdapter;
   device: GPUDevice;
-  context: GPUCanvasContext
+  context: GPUCanvasContext;
+  textures: Textures;
+  bindGroups: BindGroups;
 
   private constructor(
       adapter: GPUAdapter,
@@ -11,6 +15,11 @@ export class GPUEngine {
     this.adapter = adapter;
     this.device = device;
     this.context = context;
+
+    this.textures = new Textures(this.device, this.context.canvas as HTMLCanvasElement);
+    this.bindGroups = new BindGroups(this.device, this.textures);
+
+    console.log('GPU engine initialized correctly. Yuppie!');
   }
 
   static async create() {
@@ -42,7 +51,6 @@ export class GPUEngine {
       format: navigator.gpu.getPreferredCanvasFormat()
     });
 
-    console.log('GPU engine initialized correctly. Yuppie!');
     return new GPUEngine(adapter, device, context);
   }
 
