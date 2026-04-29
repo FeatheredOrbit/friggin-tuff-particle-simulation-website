@@ -1,10 +1,11 @@
-import { BindGroups, Textures } from './misc.ts';
+import { BindGroups, Buffers, Textures } from './misc.ts';
 
 export class GPUEngine {
   adapter: GPUAdapter;
   device: GPUDevice;
   context: GPUCanvasContext;
   textures: Textures;
+  buffers: Buffers;
   bindGroups: BindGroups;
 
   private constructor(
@@ -17,7 +18,8 @@ export class GPUEngine {
     this.context = context;
 
     this.textures = new Textures(this.device, this.context.canvas as HTMLCanvasElement);
-    this.bindGroups = new BindGroups(this.device, this.textures);
+    this.buffers = new Buffers(this.device, this.textures);
+    this.bindGroups = new BindGroups(this.device, this.textures, this.buffers);
 
     console.log('GPU engine initialized correctly. Yuppie!');
   }
