@@ -30,6 +30,8 @@ export class Textures {
   }
 }
 
+
+
 export class Buffers {
   uniformData: uniformData;
   uniforms: GPUBuffer;
@@ -58,44 +60,55 @@ export class Buffers {
   }
 }
 
+
+
 export class BindGroups {
   mainComputeLayout: GPUBindGroupLayout;
   fadeOutComputeLayout: GPUBindGroupLayout;
+  renderLayout: GPUBindGroupLayout;
 
-  constructor(device: GPUDevice, _textures: Textures, _buffers: Buffers) {
+  mainComputeBindGroup1: GPUBindGroup;
+  mainComputeBindGroup2: GPUBindGroup;
 
+  fadeOutComputeBindGroup1: GPUBindGroup;
+  fadeOutComputeBindGroup2: GPUBindGroup;
+
+  renderBindGroup1: GPUBindGroup;
+  renderBindGroup2: GPUBindGroup;
+
+  constructor(device: GPUDevice, textures: Textures, buffers: Buffers) {
     this.mainComputeLayout = device.createBindGroupLayout({
       entries: [
         {
           binding: 0,
           visibility: GPUShaderStage.COMPUTE,
           storageTexture: {
-            access: "write-only",
-            format: "rgba8unorm",
-            viewDimension: "2d"
-          }
+            access: 'write-only',
+            format: 'rgba8unorm',
+            viewDimension: '2d',
+          },
         },
 
         {
           binding: 1,
           visibility: GPUShaderStage.COMPUTE,
           buffer: {
-            type: "uniform",
+            type: 'uniform',
             hasDynamicOffset: false,
-            minBindingSize: 0
-          }
+            minBindingSize: 0,
+          },
         },
 
         {
           binding: 2,
           visibility: GPUShaderStage.COMPUTE,
           buffer: {
-            type: "storage",
+            type: 'storage',
             hasDynamicOffset: false,
-            minBindingSize: 0
-          }
-        }
-      ]
+            minBindingSize: 0,
+          },
+        },
+      ],
     });
     this.fadeOutComputeLayout = device.createBindGroupLayout({
       entries: [
@@ -130,8 +143,153 @@ export class BindGroups {
         },
       ],
     });
+    this.renderLayout = device.createBindGroupLayout({
+      entries: [
+        {
+          binding: 0,
+          visibility: GPUShaderStage.FRAGMENT,
+          texture: {
+            sampleType: "float",
+            viewDimension: '2d',
+            multisampled: false
+          }
+        },
+
+        {
+          binding: 1,
+          visibility: GPUShaderStage.FRAGMENT,
+          sampler: { type: "non-filtering" }
+        }
+      ]
+    });
+
+    this.mainComputeBindGroup1 = device.createBindGroup({
+      layout: this.mainComputeLayout,
+      entries: [
+        {
+          binding: 0,
+          resource: textures.texture1,
+        },
+
+        {
+          binding: 1,
+          resource: buffers.uniforms,
+        },
+
+        {
+          binding: 2,
+          resource: buffers.particles,
+        },
+      ],
+    });
+    this.mainComputeBindGroup2 = device.createBindGroup({
+      layout: this.mainComputeLayout,
+      entries: [
+        {
+          binding: 0,
+          resource: textures.texture2,
+        },
+
+        {
+          binding: 1,
+          resource: buffers.uniforms,
+        },
+
+        {
+          binding: 2,
+          resource: buffers.particles,
+        },
+      ],
+    });
+
+    this.fadeOutComputeBindGroup1 = device.createBindGroup({
+      layout: this.fadeOutComputeLayout,
+      entries: [
+        {
+          binding: 0,
+          resource: textures.texture2,
+        },
+
+        {
+          binding: 1,
+          resource: textures.texture1,
+        },
+
+        {
+          binding: 2,
+          resource: buffers.uniforms,
+        },
+      ],
+    });
+    this.fadeOutComputeBindGroup2 = device.createBindGroup({
+      layout: this.fadeOutComputeLayout,
+      entries: [
+        {
+          binding: 0,
+          resource: textures.texture1,
+        },
+
+        {
+          binding: 1,
+          resource: textures.texture2,
+        },
+
+        {
+          binding: 2,
+          resource: buffers.uniforms,
+        },
+      ],
+    });
+
+    this.renderBindGroup1 = device.createBindGroup({
+      layout: this.renderLayout,
+      entries: [
+        {
+          binding: 0,
+          resource: textures.texture2
+        },
+
+        {
+          binding: 1,
+          resource: textures.sampler
+        }
+      ]
+    });
+    this.renderBindGroup2 = device.createBindGroup({
+      layout: this.renderLayout,
+      entries: [
+        {
+          binding: 0,
+          resource: textures.texture1
+        },
+
+        {
+          binding: 1,
+          resource: textures.sampler
+        }
+      ]
+    });
+  }
+}
 
 
 
+import mainComputeShader from 'shaders/compute/main.wgsl?raw';
+
+export class Pipelines {
+  mainCompute: GPUComputePipeline;
+
+  constructor(device: GPUDevice, bindGroups: BindGroups) {
+    const mainComputePipelineLayout = device.createPipelineLayout({
+      bindGroupLayouts: [bindGroups.mainComputeLayout]
+    });
+
+    this.mainCompute = device.createComputePipeline({
+      layout: mainComputePipelineLayout,
+      compute: {
+        module:  device.createShaderModule({ code: mainComputeShader }),
+        entryPoint: "main"
+      }
+    });
   }
 }
