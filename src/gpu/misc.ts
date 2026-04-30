@@ -274,21 +274,55 @@ export class BindGroups {
 
 
 
-import mainComputeShader from 'shaders/compute/main.wgsl?raw';
+import mainComputeShader from './shaders/compute/main.wgsl?raw';
+import fadeOutComputeShader from './shaders/compute/fade_out.wgsl?raw';
+import renderShader from './shaders/render.wgsl?raw';
 
 export class Pipelines {
   mainCompute: GPUComputePipeline;
+  fadeOutCompute: GPUComputePipeline;
+  render: GPURenderPipeline;
 
   constructor(device: GPUDevice, bindGroups: BindGroups) {
-    const mainComputePipelineLayout = device.createPipelineLayout({
-      bindGroupLayouts: [bindGroups.mainComputeLayout]
+    this.mainCompute = device.createComputePipeline({
+      layout: device.createPipelineLayout({ bindGroupLayouts: [bindGroups.mainComputeLayout] }),
+      compute: {
+        module: device.createShaderModule({ code: mainComputeShader }),
+        entryPoint: 'main',
+      },
     });
 
-    this.mainCompute = device.createComputePipeline({
-      layout: mainComputePipelineLayout,
+    this.fadeOutCompute = device.createComputePipeline({
+      layout: device.createPipelineLayout({ bindGroupLayouts: [bindGroups.fadeOutComputeLayout] }),
       compute: {
-        module:  device.createShaderModule({ code: mainComputeShader }),
+        module: device.createShaderModule({ code: fadeOutComputeShader }),
         entryPoint: "main"
+      }
+    });
+
+    const renderModule = device.createShaderModule( {code: renderShader });
+    this.render = device.createRenderPipeline({
+      layout: device.createPipelineLayout({ bindGroupLayouts: [bindGroups.renderLayout] }),
+      vertex: {
+        module: renderModule,
+        entryPoint: "vs_main"
+      },
+      fragment: {
+        module: renderModule,
+        entryPoint: "fs_main",
+        targets: [
+          {
+            format: navigator.gpu.getPreferredCanvasFormat(),
+            blend: {
+              color: { operation: "add" },
+              alpha: { operation: "add" }
+            }
+          }
+        ]
+      },
+      primitive: {
+        topology: "triangle-list",
+        cullMode: "none",
       }
     });
   }

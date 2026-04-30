@@ -1,12 +1,17 @@
-import { BindGroups, Buffers, Textures } from './misc.ts';
+import { BindGroups, Buffers, Pipelines, Textures } from "./misc.ts";
 
-export class GPUEngine {
+class GPUEngine {
   adapter: GPUAdapter;
   device: GPUDevice;
   context: GPUCanvasContext;
   textures: Textures;
   buffers: Buffers;
   bindGroups: BindGroups;
+  pipelines: Pipelines;
+  numberOfParticles: number;
+
+  // Used to alternate between bind groups since textures cannot be written and wrote to at the same time it seems.
+  renderStage: boolean;
 
   private constructor(
       adapter: GPUAdapter,
@@ -20,6 +25,9 @@ export class GPUEngine {
     this.textures = new Textures(this.device, this.context.canvas as HTMLCanvasElement);
     this.buffers = new Buffers(this.device, this.textures);
     this.bindGroups = new BindGroups(this.device, this.textures, this.buffers);
+    this.pipelines = new Pipelines(this.device, this.bindGroups);
+    this.renderStage = false;
+    this.numberOfParticles = 0;
 
     console.log('GPU engine initialized correctly. Yuppie!');
   }
@@ -59,6 +67,22 @@ export class GPUEngine {
   public render() {
     const encoder = this.device.createCommandEncoder();
 
+    const compute_pass = encoder.beginComputePass();
+
+    compute_pass.setBindGroup(0, this.renderStage ? this.bindGroups.fadeOutComputeBindGroup1 : this.bindGroups.fadeOutComputeBindGroup2);
+    compute_pass.setPipeline(this.pipelines.fadeOutCompute);
+    compute_pass.dispatchWorkgroups(
+      (this.textures.texture1.width + 7) / 8,
+      (this.textures.texture1.height + 7) / 8,
+      1,
+    );
+
+    compute_pass.setBindGroup(0, this.renderStage ? this.bindGroups.mainComputeBindGroup1 : this.bindGroups.mainComputeBindGroup2);
+    compute_pass.setPipeline(this.pipelines.mainCompute);
+    compute_pass.dispatchWorkgroups(this.numberOfParticles, 1, 1);
+
+    compute_pass.end();
+
     const render_pass = encoder.beginRenderPass({
       colorAttachments: [
         {
@@ -69,9 +93,16 @@ export class GPUEngine {
         }
       ]
     });
+
+    render_pass.setBindGroup(0, this.renderStage ? this.bindGroups.renderBindGroup1 : this.bindGroups.renderBindGroup2);
+    render_pass.setPipeline(this.pipelines.render);
+    render_pass.draw(3, 1);
+
     render_pass.end();
 
     console.log("Render called");
     this.device.queue.submit([encoder.finish()]);
   }
 }
+
+export const gpuEngine = await GPUEngine.create();
