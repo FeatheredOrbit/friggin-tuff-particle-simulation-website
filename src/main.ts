@@ -24,24 +24,26 @@ function mainLoop() {
 }
 
 function temporaryParticleInit() {
-  const amountOfParticles: number = 1;
-  const valuesPerParticle = 3;
+  const amountOfParticles: number = 2;
+  const valuesPerParticle = 4;
 
   const buffer = new ArrayBuffer(amountOfParticles * valuesPerParticle * Uint32Array.BYTES_PER_ELEMENT);
 
   const floatView = new Float32Array(buffer);
-  const  uintView = new Uint32Array(buffer);
 
-  for (let i = 0; i < amountOfParticles; i++) {
-    const offset = i * valuesPerParticle;
 
-    floatView[offset] = 0.0;
-    floatView[offset + 1] = i / 1000;
-    floatView[offset + 2] = 0.0;
-  }
+  floatView[0] = 1.0;
+  floatView[1] = 0.0;
+  floatView[2] = 0.0;
+  floatView[3] = 0.0;
+
+  floatView[4] = 0.0;
+  floatView[5] = 50;
+  floatView[6] = 0.0;
+  floatView[7] = 0.0;
 
   if (gpuEngine) {
-    gpuEngine.setParticles(uintView);
+    gpuEngine.setParticles(buffer);
   }
 }
 

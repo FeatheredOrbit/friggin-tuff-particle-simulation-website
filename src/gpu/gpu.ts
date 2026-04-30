@@ -62,8 +62,8 @@ export class GPUEngine {
     return new GPUEngine(adapter, device, context);
   }
 
-  public setParticles(particleData: Uint32Array) {
-    this.device.queue.writeBuffer(this.buffers.particles, 0, particleData.buffer);
+  public setParticles(particleData: ArrayBuffer) {
+    this.device.queue.writeBuffer(this.buffers.particles, 0, particleData);
   }
 
   public render() {
@@ -104,5 +104,7 @@ export class GPUEngine {
 
     console.log("Render called");
     this.device.queue.submit([encoder.finish()]);
+
+    this.renderStage = !this.renderStage;
   }
 }

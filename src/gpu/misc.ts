@@ -42,7 +42,7 @@ export class Buffers {
       // Both textures are the same, so just use one.
       textureWidth: textures.texture1.width,
       textureHeight: textures.texture2.height,
-      particleNumber: 1,
+      particleNumber: 2,
       windowScaleFactor: window.devicePixelRatio
     };
 
@@ -51,9 +51,9 @@ export class Buffers {
     const floatView = new Float32Array(buffer);
     const uintView = new Uint32Array(buffer);
 
-    floatView[0] = this.uniformData.particleNumber;
-    floatView[1] = this.uniformData.textureWidth;
-    floatView[2] = this.uniformData.textureHeight;
+    uintView[0] = this.uniformData.particleNumber;
+    uintView[1] = this.uniformData.textureWidth;
+    uintView[2] = this.uniformData.textureHeight;
     floatView[3] = this.uniformData.windowScaleFactor;
 
     this.uniforms = device.createBuffer({
@@ -62,7 +62,7 @@ export class Buffers {
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
       mappedAtCreation: false
     });
-    device.queue.writeBuffer(this.uniforms, 0, uintView.buffer);
+    device.queue.writeBuffer(this.uniforms, 0, buffer);
 
     this.particles = device.createBuffer({
       // Vec4 of 4 f32s.
@@ -181,7 +181,7 @@ export class BindGroups {
       entries: [
         {
           binding: 0,
-          resource: textures.texture1,
+          resource: textures.texture1.createView(),
         },
 
         {
@@ -200,7 +200,7 @@ export class BindGroups {
       entries: [
         {
           binding: 0,
-          resource: textures.texture2,
+          resource: textures.texture2.createView(),
         },
 
         {
@@ -220,12 +220,12 @@ export class BindGroups {
       entries: [
         {
           binding: 0,
-          resource: textures.texture2,
+          resource: textures.texture2.createView(),
         },
 
         {
           binding: 1,
-          resource: textures.texture1,
+          resource: textures.texture1.createView(),
         },
 
         {
@@ -239,12 +239,12 @@ export class BindGroups {
       entries: [
         {
           binding: 0,
-          resource: textures.texture1,
+          resource: textures.texture1.createView(),
         },
 
         {
           binding: 1,
-          resource: textures.texture2,
+          resource: textures.texture2.createView(),
         },
 
         {
@@ -259,7 +259,7 @@ export class BindGroups {
       entries: [
         {
           binding: 0,
-          resource: textures.texture2
+          resource: textures.texture2.createView()
         },
 
         {
@@ -273,7 +273,7 @@ export class BindGroups {
       entries: [
         {
           binding: 0,
-          resource: textures.texture1
+          resource: textures.texture1.createView()
         },
 
         {

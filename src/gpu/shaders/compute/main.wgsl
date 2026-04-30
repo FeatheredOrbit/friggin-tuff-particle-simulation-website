@@ -1,18 +1,16 @@
 struct Uniforms {
-    // All of these need to be bicasted back into a float.
     // X is number of particles.
     // Y is texture width.
     // Z is texture height.
-    // W is window scale factor.
+    // W is window scale factor. It needs to be bitcasted into a float though.
     data_1: vec4<u32>
 }
 
 struct ParticleData {
-    // All of these need to be bitcasted back into a float.
     // X slot is particle type: 0 = Red || 1 = Green || 2 = Blue.
     // Y slot is x position.
     // Z slot is y position.
-    data_1: vec4<u32>
+    data_1: vec4<f32>
 }
 
 const RED: f32 = 0.0;
@@ -46,15 +44,18 @@ fn main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {
 fn behave(id: u32) {
 
     // For now check every particle for every particle, in the near future I will do spatial partitioning to save on iterations.
-    for (var iter_id = 0u; iter_id < u32(bitcast<f32>(uniforms.data_1.x)); iter_id++) {
+    for (var iter_id = 0u; iter_id < uniforms.data_1.x; iter_id++) {
 
         if (iter_id == id) { continue; }
+        if (iter_id > 1000) {
+            return;
+        }
 
-        if bitcast<f32>(particle_data[id].data_1.x) == RED {
+        if particle_data[id].data_1.x == RED {
             red(id, iter_id);
         }
 
-        if bitcast<f32>(particle_data[id].data_1.x) == BLUE {
+        if particle_data[id].data_1.x == BLUE {
             blue(id, iter_id);
         }
 
@@ -62,14 +63,14 @@ fn behave(id: u32) {
 
     // Idk why but unless I bring in the scale factor of the screen the clamping doesn't really work, not the bound
     // checking, I geniunely can't figure out what's wrong on the Rust side so until I figure it out I just use the
-    // scale factor directrly in the shader.
+    // scale factor directly in the shader.
     let scale_factor = bitcast<f32>(uniforms.data_1.w);
 
     bound_check(id, scale_factor);
 
     // Check if the particle has gone out of bounds during behaviour, if so, bring it back.
-    particle_data[id].data_1.y = bitcast<u32>(clamp(bitcast<f32>(particle_data[id].data_1.y), 0.0, f32(uniforms.data_1.y) * (1.0 / scale_factor) - 1.0));
-    particle_data[id].data_1.z = bitcast<u32>(clamp(bitcast<f32>(particle_data[id].data_1.y), 0.0, f32(uniforms.data_1.z) * (1.0 / scale_factor) - 1.0));
+    particle_data[id].data_1.y = clamp(particle_data[id].data_1.y, 0.0, f32(uniforms.data_1.y) * (1.0 / scale_factor) - 1.0);
+    particle_data[id].data_1.z = clamp(particle_data[id].data_1.z, 0.0, f32(uniforms.data_1.z) * (1.0 / scale_factor) - 1.0);
 
 }
 
@@ -79,13 +80,13 @@ fn behave(id: u32) {
 fn red(id: u32, iter_id: u32) {
     let epsilon = 0.1;
 
-    let other_particle_x = bitcast<f32>(particle_data[iter_id].data_1.y);
-    let other_particle_y = bitcast<f32>(particle_data[iter_id].data_1.z);
+    let other_particle_x = particle_data[iter_id].data_1.y;
+    let other_particle_y = particle_data[iter_id].data_1.z;
 
-    let particle_x = bitcast<f32>(particle_data[id].data_1.y);
-    let particle_y = bitcast<f32>(particle_data[id].data_1.z);
+    let particle_x = particle_data[id].data_1.y;
+    let particle_y = particle_data[id].data_1.z;
 
-    let color_flag = bitcast<f32>(particle_data[iter_id].data_1.x);
+    let color_flag = particle_data[iter_id].data_1.x;
 
     if (color_flag == BLUE || color_flag == RED) {
        let dx = other_particle_x - particle_x;
@@ -97,8 +98,8 @@ fn red(id: u32, iter_id: u32) {
             let dir_x = dx / (pow(length, 2.0) + epsilon) * 5;
             let dir_y = dy / (pow(length, 2.0) + epsilon) * 5;
 
-            particle_data[id].data_1.y = bitcast<u32>(particle_x - dir_x * 0.01);
-            particle_data[id].data_1.z = bitcast<u32>(particle_y - dir_y * 0.01);
+            particle_data[id].data_1.y -= dir_x * 0.01;
+            particle_data[id].data_1.z -= dir_y * 0.01;
         }
     }
 }
@@ -110,13 +111,13 @@ fn red(id: u32, iter_id: u32) {
 fn blue(id: u32, iter_id: u32) {
     let epsilon = 0.1;
 
-    let other_particle_x = bitcast<f32>(particle_data[iter_id].data_1.y);
-    let other_particle_y = bitcast<f32>(particle_data[iter_id].data_1.z);
+    let other_particle_x = particle_data[iter_id].data_1.y;
+    let other_particle_y = particle_data[iter_id].data_1.z;
 
-    let particle_x = bitcast<f32>(particle_data[id].data_1.y);
-    let particle_y = bitcast<f32>(particle_data[id].data_1.z);
+    let particle_x = particle_data[id].data_1.y;
+    let particle_y = particle_data[id].data_1.z;
 
-    let color_flag = bitcast<f32>(particle_data[iter_id].data_1.x);
+    let color_flag = particle_data[iter_id].data_1.x;
 
     if (color_flag == BLUE || color_flag == RED) {
        let dx = other_particle_x - particle_x;
@@ -128,8 +129,8 @@ fn blue(id: u32, iter_id: u32) {
             let dir_x = dx / (pow(length, 2.0) + epsilon) * 5;
             let dir_y = dy / (pow(length, 2.0) + epsilon) * 5;
 
-            particle_data[id].data_1.y = bitcast<u32>(particle_x + dir_x * 0.01);
-            particle_data[id].data_1.z = bitcast<u32>(particle_y + dir_y * 0.01);
+            particle_data[id].data_1.y += dir_x * 0.01;
+            particle_data[id].data_1.z += dir_y * 0.01;
         }
     }
 }
@@ -138,7 +139,7 @@ fn blue(id: u32, iter_id: u32) {
 fn bound_check(id: u32, scale_factor: f32) {
     // Check for left wall.
     {
-        let pos_x = bitcast<f32>(particle_data[id].data_1.y);
+        let pos_x = particle_data[id].data_1.y;
 
         let dx = 0.0 - pos_x;
 
@@ -147,13 +148,13 @@ fn bound_check(id: u32, scale_factor: f32) {
         if length != 0.0 {
             let dir_x = dx / pow(length, 2.0) * 2;
 
-            particle_data[id].data_1.y = bitcast<u32>(pos_x - dir_x * 0.2);
+            particle_data[id].data_1.y -= dir_x * 0.2;
         }
     }
 
     // Check for right wall.
     {
-        let pos_x = bitcast<f32>(particle_data[id].data_1.y);
+        let pos_x = particle_data[id].data_1.y;
         let right_wall = f32(uniforms.data_1.y);
 
         let dx = (right_wall * (1.0 / scale_factor)) - pos_x;
@@ -163,13 +164,13 @@ fn bound_check(id: u32, scale_factor: f32) {
         if length != 0.0 {
             let dir_x = dx / pow(length, 2.0) * 2;
 
-            particle_data[id].data_1.y = bitcast<u32>(pos_x - dir_x * 0.2);
+            particle_data[id].data_1.y -= dir_x * 0.2;
         }
     }
 
     // Check for ceiling.
     {
-        let pos_y = bitcast<f32>(particle_data[id].data_1.z);
+        let pos_y = particle_data[id].data_1.z;
 
         let dy = 0.0 - pos_y;
 
@@ -178,13 +179,13 @@ fn bound_check(id: u32, scale_factor: f32) {
         if length != 0.0 {
             let dir_y = dy / pow(length, 2.0) * 2;
 
-            particle_data[id].data_1.z = bitcast<u32>(pos_y - dir_y * 0.2);
+            particle_data[id].data_1.z -= dir_y * 0.2;
         }
     }
 
     // Check for floor.
     {
-        let pos_y = bitcast<f32>(particle_data[id].data_1.z);
+        let pos_y = particle_data[id].data_1.z;
         let floor = f32(uniforms.data_1.z);
 
         let dy = (floor * (1.0 / scale_factor)) - pos_y;
@@ -194,7 +195,7 @@ fn bound_check(id: u32, scale_factor: f32) {
         if length != 0.0 {
             let dir_y = dy / pow(length, 2.0) * 2;
 
-            particle_data[id].data_1.z = bitcast<u32>(pos_y - dir_y * 0.2);
+            particle_data[id].data_1.z -= dir_y * 0.2;
         }
     }
 }
@@ -202,13 +203,13 @@ fn bound_check(id: u32, scale_factor: f32) {
 fn draw_texture(id: u32) {
     var color = vec4<f32>(0.0, 0.0, 0.0, 1.0);
 
-    if bitcast<f32>(particle_data[id].data_1.x) == RED {
+    if particle_data[id].data_1.x == RED {
         color = vec4<f32>(1.0, 0.0, 0.0, 1.0);
     }
-    else if bitcast<f32>(particle_data[id].data_1.x) == GREEN {
+    else if particle_data[id].data_1.x == GREEN {
         color = vec4<f32>(0.0, 1.0, 0.0, 1.0);
     }
-    else if bitcast<f32>(particle_data[id].data_1.x) == BLUE {
+    else if particle_data[id].data_1.x == BLUE {
         color = vec4<f32>(0.0, 0.0, 1.0, 1.0);
     }
 
@@ -216,7 +217,7 @@ fn draw_texture(id: u32) {
         texture,
         // Yeah this looks terrible but the reason is that the actual value is a float so it needs to be bitcasted
         // to float, but then this function takes integers so it needs to be casted into an integer.
-        vec2<u32>(u32(bitcast<f32>(particle_data[id].data_1.y)), u32(bitcast<f32>(particle_data[id].data_1.z))),
+        vec2<u32>(u32(particle_data[id].data_1.y), u32(particle_data[id].data_1.z)),
         color
     );
 }
