@@ -1,6 +1,6 @@
 import { BindGroups, Buffers, Pipelines, Textures } from "./misc.ts";
 
-class GPUEngine {
+export class GPUEngine {
   adapter: GPUAdapter;
   device: GPUDevice;
   context: GPUCanvasContext;
@@ -8,9 +8,8 @@ class GPUEngine {
   buffers: Buffers;
   bindGroups: BindGroups;
   pipelines: Pipelines;
-  numberOfParticles: number;
 
-  // Used to alternate between bind groups since textures cannot be written and wrote to at the same time it seems.
+  // Used to alternate between bind groups since textures cannot be written and wrote to at the same time, it seems.
   renderStage: boolean;
 
   private constructor(
@@ -27,7 +26,6 @@ class GPUEngine {
     this.bindGroups = new BindGroups(this.device, this.textures, this.buffers);
     this.pipelines = new Pipelines(this.device, this.bindGroups);
     this.renderStage = false;
-    this.numberOfParticles = 0;
 
     console.log('GPU engine initialized correctly. Yuppie!');
   }
@@ -64,6 +62,10 @@ class GPUEngine {
     return new GPUEngine(adapter, device, context);
   }
 
+  public setParticles(particleData: Uint32Array) {
+    this.device.queue.writeBuffer(this.buffers.particles, 0, particleData.buffer);
+  }
+
   public render() {
     const encoder = this.device.createCommandEncoder();
 
@@ -79,7 +81,7 @@ class GPUEngine {
 
     compute_pass.setBindGroup(0, this.renderStage ? this.bindGroups.mainComputeBindGroup1 : this.bindGroups.mainComputeBindGroup2);
     compute_pass.setPipeline(this.pipelines.mainCompute);
-    compute_pass.dispatchWorkgroups(this.numberOfParticles, 1, 1);
+    compute_pass.dispatchWorkgroups(this.buffers.uniformData.particleNumber, 1, 1);
 
     compute_pass.end();
 
@@ -104,5 +106,3 @@ class GPUEngine {
     this.device.queue.submit([encoder.finish()]);
   }
 }
-
-export const gpuEngine = await GPUEngine.create();

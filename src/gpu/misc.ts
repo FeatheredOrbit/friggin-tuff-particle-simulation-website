@@ -2,7 +2,7 @@ export class Textures {
   texture1: GPUTexture;
   texture2: GPUTexture;
 
-  // Not really a texture but it's related anyway.
+  // Not really a texture, but it's related anyway.
   sampler: GPUSampler;
 
   constructor(device: GPUDevice, canvas: HTMLCanvasElement) {
@@ -39,10 +39,22 @@ export class Buffers {
 
   constructor(device: GPUDevice, textures: Textures) {
     this.uniformData = {
-      // Both textures are the same so just use one.
+      // Both textures are the same, so just use one.
       textureWidth: textures.texture1.width,
-      textureHeight: textures.texture2.height
+      textureHeight: textures.texture2.height,
+      particleNumber: 1,
+      windowScaleFactor: window.devicePixelRatio
     };
+
+    const buffer = new ArrayBuffer(4 * Uint32Array.BYTES_PER_ELEMENT);
+
+    const floatView = new Float32Array(buffer);
+    const uintView = new Uint32Array(buffer);
+
+    floatView[0] = this.uniformData.particleNumber;
+    floatView[1] = this.uniformData.textureWidth;
+    floatView[2] = this.uniformData.textureHeight;
+    floatView[3] = this.uniformData.windowScaleFactor;
 
     this.uniforms = device.createBuffer({
       // Vec4 of 4 u32s.
@@ -50,6 +62,7 @@ export class Buffers {
       usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST,
       mappedAtCreation: false
     });
+    device.queue.writeBuffer(this.uniforms, 0, uintView.buffer);
 
     this.particles = device.createBuffer({
       // Vec4 of 4 f32s.

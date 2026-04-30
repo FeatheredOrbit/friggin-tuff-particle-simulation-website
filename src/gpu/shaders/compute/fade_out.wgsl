@@ -2,6 +2,7 @@ struct Uniforms {
     // X is number of particles.
     // Y is screen width.
     // Z is screen height.
+    // W is window scale factor, needs to be reinterpreted as float though.
     data_1: vec4<u32>
 }
 
