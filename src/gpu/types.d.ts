@@ -1,8 +1,7 @@
 interface uniformData {
     particleNumber: number,
     textureWidth: number,
-    textureHeight: number,
-    windowScaleFactor: number
+    textureHeight: number
 }
 
 // These must be floats bit-casted to integers.

@@ -43,8 +43,7 @@ export class Buffers {
       // Both textures are the same, so just use one.
       textureWidth: textures.texture1.width,
       textureHeight: textures.texture2.height,
-      particleNumber: 50,
-      windowScaleFactor: window.devicePixelRatio
+      particleNumber: 50
     };
 
     {
@@ -56,7 +55,7 @@ export class Buffers {
       uintView[0] = this.uniformData.particleNumber;
       uintView[1] = this.uniformData.textureWidth;
       uintView[2] = this.uniformData.textureHeight;
-      floatView[3] = this.uniformData.windowScaleFactor;
+      floatView[3] = 0.0;
 
       this.uniforms = device.createBuffer({
         // Vec4 of 4 u32s.

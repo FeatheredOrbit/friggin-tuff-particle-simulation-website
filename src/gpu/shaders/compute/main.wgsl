@@ -2,7 +2,6 @@ struct Uniforms {
     // X is number of particles.
     // Y is texture width.
     // Z is texture height.
-    // W is window scale factor. It needs to be bitcasted into a float though.
     data_1: vec4<u32>
 }
 
@@ -59,16 +58,11 @@ fn behave(id: u32) {
 
     }
 
-    // Idk why but unless I bring in the scale factor of the screen the clamping doesn't really work, not the bound
-    // checking, I geniunely can't figure out what's wrong on the Rust side so until I figure it out I just use the
-    // scale factor directly in the shader.
-    let scale_factor = bitcast<f32>(uniforms.data_1.w);
-
-    bound_check(id, scale_factor);
+    bound_check(id);
 
     // Check if the particle has gone out of bounds during behaviour, if so, bring it back.
-    particle_data[id].data_1.y = clamp(particle_data[id].data_1.y, 0.0, f32(uniforms.data_1.y) * (1.0 / scale_factor) - 1.0);
-    particle_data[id].data_1.z = clamp(particle_data[id].data_1.z, 0.0, f32(uniforms.data_1.z) * (1.0 / scale_factor) - 1.0);
+    particle_data[id].data_1.y = clamp(particle_data[id].data_1.y, 0.0, f32(uniforms.data_1.y) - 1.0);
+    particle_data[id].data_1.z = clamp(particle_data[id].data_1.z, 0.0, f32(uniforms.data_1.z) - 1.0);
 
 }
 
@@ -134,7 +128,7 @@ fn blue(id: u32, iter_id: u32) {
 }
 
 // Particles should be pushed away from the walls of the screen.
-fn bound_check(id: u32, scale_factor: f32) {
+fn bound_check(id: u32) {
     // Check for left wall.
     {
         let pos_x = particle_data[id].data_1.y;
@@ -155,7 +149,7 @@ fn bound_check(id: u32, scale_factor: f32) {
         let pos_x = particle_data[id].data_1.y;
         let right_wall = f32(uniforms.data_1.y);
 
-        let dx = (right_wall * (1.0 / scale_factor)) - pos_x;
+        let dx = right_wall - pos_x;
 
         let length = sqrt(dx * dx);
 
@@ -186,7 +180,7 @@ fn bound_check(id: u32, scale_factor: f32) {
         let pos_y = particle_data[id].data_1.z;
         let floor = f32(uniforms.data_1.z);
 
-        let dy = (floor * (1.0 / scale_factor)) - pos_y;
+        let dy = floor - pos_y;
 
         let length = sqrt(dy * dy);
 
