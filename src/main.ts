@@ -35,8 +35,8 @@ function temporaryParticleInit() {
     const step = i * 4;
 
     floatView[step] = 0.0;
-    floatView[step + 1] = 100.0 + i / 10000;
-    floatView[step + 2] = 75.0 + i / 10000;
+    floatView[step + 1] = 50.0 + i / 10000;
+    floatView[step + 2] = 30.0 + i / 10000;
     floatView[step + 3] = 0.0;
   }
 

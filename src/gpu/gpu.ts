@@ -22,7 +22,7 @@ export class GPUEngine {
     this.context = context;
 
     this.textures = new Textures(this.device, this.context.canvas as HTMLCanvasElement);
-    this.buffers = new Buffers(this.device, this.textures);
+    this.buffers = new Buffers(this.device, this.textures, this.context);
     this.bindGroups = new BindGroups(this.device, this.textures, this.buffers);
     this.pipelines = new Pipelines(this.device, this.bindGroups);
     this.renderStage = false;
