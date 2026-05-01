@@ -18,6 +18,7 @@ const GREEN: f32 = 1.0;
 const BLUE: f32 = 2.0;
 
 const MAX_LOOK_DISTANCE: u32 = 100u;
+const FORCE_MULTIPLER: f32 = 5.0;
 
 @group(0) @binding(0)
 var texture: texture_storage_2d<rgba8unorm, write>;
@@ -47,15 +48,12 @@ fn behave(id: u32) {
     for (var iter_id = 0u; iter_id < uniforms.data_1.x; iter_id++) {
 
         if (iter_id == id) { continue; }
-        if (iter_id > 1000) {
-            return;
-        }
 
-        if particle_data[id].data_1.x == RED {
+        if (particle_data[id].data_1.x == RED) {
             red(id, iter_id);
         }
 
-        if particle_data[id].data_1.x == BLUE {
+        if (particle_data[id].data_1.x == BLUE) {
             blue(id, iter_id);
         }
 
@@ -69,8 +67,8 @@ fn behave(id: u32) {
     bound_check(id, scale_factor);
 
     // Check if the particle has gone out of bounds during behaviour, if so, bring it back.
-    particle_data[id].data_1.y = clamp(particle_data[id].data_1.y, 0.0, f32(uniforms.data_1.y) * (1.0 / scale_factor) - 1.0);
-    particle_data[id].data_1.z = clamp(particle_data[id].data_1.z, 0.0, f32(uniforms.data_1.z) * (1.0 / scale_factor) - 1.0);
+    particle_data[id].data_1.y = clamp(particle_data[id].data_1.y, 0.0, f32(uniforms.data_1.y) * (1.0 / scale_factor) / 2.0);
+    particle_data[id].data_1.z = clamp(particle_data[id].data_1.z, 0.0, f32(uniforms.data_1.z) * (1.0 / scale_factor) / 2.0);
 
 }
 
@@ -95,11 +93,11 @@ fn red(id: u32, iter_id: u32) {
         let length = sqrt(dx * dx + dy * dy);
 
         if length != 0.0 {
-            let dir_x = dx / (pow(length, 2.0) + epsilon) * 5;
-            let dir_y = dy / (pow(length, 2.0) + epsilon) * 5;
+            let dir_x = dx / (pow(length, 2.0) + epsilon) * FORCE_MULTIPLER;
+            let dir_y = dy / (pow(length, 2.0) + epsilon) * FORCE_MULTIPLER;
 
-            particle_data[id].data_1.y -= dir_x * 0.01;
-            particle_data[id].data_1.z -= dir_y * 0.01;
+            particle_data[id].data_1.y -= dir_x;
+            particle_data[id].data_1.z -= dir_y;
         }
     }
 }
@@ -126,11 +124,11 @@ fn blue(id: u32, iter_id: u32) {
         let length = sqrt(dx * dx + dy * dy);
 
         if length != 0.0 {
-            let dir_x = dx / (pow(length, 2.0) + epsilon) * 5;
-            let dir_y = dy / (pow(length, 2.0) + epsilon) * 5;
+            let dir_x = dx / (pow(length, 2.0) + epsilon) * FORCE_MULTIPLER;
+            let dir_y = dy / (pow(length, 2.0) + epsilon) * FORCE_MULTIPLER;
 
-            particle_data[id].data_1.y += dir_x * 0.01;
-            particle_data[id].data_1.z += dir_y * 0.01;
+            particle_data[id].data_1.y += dir_x;
+            particle_data[id].data_1.z += dir_y;
         }
     }
 }
@@ -146,9 +144,9 @@ fn bound_check(id: u32, scale_factor: f32) {
         let length = sqrt(dx * dx);
 
         if length != 0.0 {
-            let dir_x = dx / pow(length, 2.0) * 2;
+            let dir_x = dx / pow(length, 2.0) * FORCE_MULTIPLER * 2;
 
-            particle_data[id].data_1.y -= dir_x * 0.2;
+            particle_data[id].data_1.y -= dir_x;
         }
     }
 
@@ -162,9 +160,9 @@ fn bound_check(id: u32, scale_factor: f32) {
         let length = sqrt(dx * dx);
 
         if length != 0.0 {
-            let dir_x = dx / pow(length, 2.0) * 2;
+            let dir_x = dx / pow(length, 2.0) * FORCE_MULTIPLER * 2;
 
-            particle_data[id].data_1.y -= dir_x * 0.2;
+            particle_data[id].data_1.y -= dir_x;
         }
     }
 
@@ -177,9 +175,9 @@ fn bound_check(id: u32, scale_factor: f32) {
         let length = sqrt(dy * dy);
 
         if length != 0.0 {
-            let dir_y = dy / pow(length, 2.0) * 2;
+            let dir_y = dy / pow(length, 2.0) * FORCE_MULTIPLER * 2;
 
-            particle_data[id].data_1.z -= dir_y * 0.2;
+            particle_data[id].data_1.z -= dir_y;
         }
     }
 
@@ -193,9 +191,9 @@ fn bound_check(id: u32, scale_factor: f32) {
         let length = sqrt(dy * dy);
 
         if length != 0.0 {
-            let dir_y = dy / pow(length, 2.0) * 2;
+            let dir_y = dy / pow(length, 2.0) * FORCE_MULTIPLER * 2;
 
-            particle_data[id].data_1.z -= dir_y * 0.2;
+            particle_data[id].data_1.z -= dir_y;
         }
     }
 }

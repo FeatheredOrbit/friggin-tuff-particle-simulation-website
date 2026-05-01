@@ -42,7 +42,7 @@ export class Buffers {
       // Both textures are the same, so just use one.
       textureWidth: textures.texture1.width,
       textureHeight: textures.texture2.height,
-      particleNumber: 2,
+      particleNumber: 50,
       windowScaleFactor: window.devicePixelRatio
     };
 
