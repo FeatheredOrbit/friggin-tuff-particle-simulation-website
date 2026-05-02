@@ -24,16 +24,14 @@ fn main(@builtin(global_invocation_id) global_invocation_id: vec3<u32>) {
     if id_x >= uniforms.data_1.y || id_y >= uniforms.data_1.z { return; }
 
     var color = textureLoad(texture_read, vec2<u32>(id_x, id_y));
+    var rgb = color.rgb;
 
-    // Fade out alpha.
-    if color.a <= 0.04 {
-        color.a = 0.0;
+    if max(max(rgb.r, rgb.g), rgb.b) <= 0.25 {
+        rgb = vec3<f32>(0.0, 0.0, 0.0);
     }
     else {
-        color.a *= 0.95;
+        rgb *= 0.95;
     }
 
-    let final_color = vec4<f32>(color.rgb * color.a, color.a);
-
-    textureStore(texture_write, vec2<u32>(id_x, id_y), final_color);
+    textureStore(texture_write, vec2<u32>(id_x, id_y), vec4<f32>(rgb, 1.0));
 }

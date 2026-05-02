@@ -21,9 +21,9 @@ export class Textures {
      });
 
      this.sampler = device.createSampler({
-       magFilter: "nearest",
-       minFilter: "nearest",
-       mipmapFilter: "nearest"
+       magFilter: "linear",
+       minFilter: "linear",
+       mipmapFilter: "linear"
      });
 
      console.log("Textures initialized correctly!");
@@ -189,7 +189,7 @@ export class BindGroups {
         {
           binding: 1,
           visibility: GPUShaderStage.FRAGMENT,
-          sampler: { type: "non-filtering" }
+          sampler: { type: "filtering" }
         },
 
         {
