@@ -19,7 +19,6 @@ function render() {
 
 function mainLoop() {
   render();
-
   requestAnimationFrame(mainLoop);
 }
 

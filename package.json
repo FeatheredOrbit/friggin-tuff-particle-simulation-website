@@ -5,15 +5,19 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "tunnel": "ngrok http 5173",
     "build": "tsc && vite build",
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@webgpu/types": "^0.1.69",
+    "@types/hammerjs": "^2.0.46",
+    "ngrok": "^5.0.0-beta.2",
     "prettier": "^3.3.1",
     "typescript": "^5.2.2",
     "vite": "8.0.5"
   },
   "dependencies": {
-    "@webgpu/types": "^0.1.69"
+    "hammerjs": "^2.0.8"
   }
 }

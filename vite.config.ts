@@ -1,5 +1,8 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  base: "/"
+  base: "/",
+  server: {
+    allowedHosts: ["makeover-reach-reveler.ngrok-free.dev"],
+  },
 });
