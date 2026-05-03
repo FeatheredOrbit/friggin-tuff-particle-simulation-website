@@ -10,14 +10,15 @@
     "preview": "vite preview"
   },
   "devDependencies": {
-    "@webgpu/types": "^0.1.69",
     "@types/hammerjs": "^2.0.46",
+    "@webgpu/types": "^0.1.69",
     "ngrok": "^5.0.0-beta.2",
     "prettier": "^3.3.1",
     "typescript": "^5.2.2",
     "vite": "8.0.5"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "hammerjs": "^2.0.8"
   }
 }

@@ -1,4 +1,7 @@
 import {GPUEngine} from "./gpu/gpu.ts";
+import { inject } from '@vercel/analytics';
+
+inject();
 
 let gpuEngine: GPUEngine | undefined;
 
