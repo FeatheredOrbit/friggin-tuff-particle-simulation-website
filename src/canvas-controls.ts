@@ -16,12 +16,21 @@ const rotate = new Hammer.Rotate({
   enable: true,
   threshold: 10
 });
+const pan = new Hammer.Pan({
+  direction: Hammer.DIRECTION_ALL,
+  enable: true,
+  threshold: 30
+});
 
 pinch.recognizeWith(rotate);
-hammerManager.add([pinch, rotate]);
+hammerManager.add([pinch, rotate, pan]);
 
 let currentScale= 1;
 let currentRotation= 0;
+let currentPositionOffset = {
+  x: 0,
+  y: 0
+};
 
 hammerManager.on("rotatestart", (val) => {
   // For some reason when first placing your fingers down to start rotating,
@@ -40,6 +49,17 @@ hammerManager.on("pinchmove rotatemove", (val) => {
 hammerManager.on("pinchend rotateend", (val) => {
   currentScale *= val.scale;
   currentRotation += val.rotation;
+});
+
+
+hammerManager.on("panmove", (val) => {
+  canvas.style.top = `calc(50% + ${currentPositionOffset.y + val.deltaY}px)`;
+  canvas.style.left = `calc(50% + ${currentPositionOffset.x + val.deltaX}px)`;
+});
+
+hammerManager.on("panend", (val) => {
+  currentPositionOffset.x += val.deltaX;
+  currentPositionOffset.y += val.deltaY;
 });
 
 canvasContainer.addEventListener("wheel", (val) => {
