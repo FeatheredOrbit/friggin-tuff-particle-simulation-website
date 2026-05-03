@@ -3,9 +3,11 @@ import "hammerjs";
 const canvasContainer = document.getElementById("canvas-container") as HTMLElement;
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 
-const hammerManager = new Hammer.Manager(
+const canvasContainerManager = new Hammer.Manager(
   canvasContainer
 );
+const canvasManager = new Hammer.Manager(canvas);
+
 const pinch = new Hammer.Pinch({
   direction: Hammer.DIRECTION_ALL,
   enable: true,
@@ -19,11 +21,12 @@ const rotate = new Hammer.Rotate({
 const pan = new Hammer.Pan({
   direction: Hammer.DIRECTION_ALL,
   enable: true,
-  threshold: 30
+  threshold: 15
 });
 
 pinch.recognizeWith(rotate);
-hammerManager.add([pinch, rotate, pan]);
+canvasContainerManager.add([pinch, rotate]);
+canvasManager.add(pan);
 
 let currentScale= 1;
 let currentRotation= 0;
@@ -32,7 +35,7 @@ let currentPositionOffset = {
   y: 0
 };
 
-hammerManager.on("rotatestart", (val) => {
+canvasContainerManager.on("rotatestart", (val) => {
   // For some reason when first placing your fingers down to start rotating,
   // a very large number is returned for rotation? Like in my case every time
   // I placed my fingers down, it applied a random rotation before properly
@@ -41,23 +44,22 @@ hammerManager.on("rotatestart", (val) => {
   currentRotation -= val.rotation;
 });
 
-hammerManager.on("pinchmove rotatemove", (val) => {
- canvas.style.transform = `translate(-50%, -50%) rotate(${currentRotation + val.rotation}deg) scale(${currentScale * val.scale})`;
-
+canvasContainerManager.on("pinchmove rotatemove", (val) => {
+  canvas.style.transform = `translate(-50%, -50%) rotate(${currentRotation + val.rotation}deg) scale(${currentScale * val.scale})`;
 });
 
-hammerManager.on("pinchend rotateend", (val) => {
+canvasContainerManager.on("pinchend rotateend", (val) => {
   currentScale *= val.scale;
   currentRotation += val.rotation;
 });
 
 
-hammerManager.on("panmove", (val) => {
+canvasManager.on("panmove", (val) => {
   canvas.style.top = `calc(50% + ${currentPositionOffset.y + val.deltaY}px)`;
   canvas.style.left = `calc(50% + ${currentPositionOffset.x + val.deltaX}px)`;
 });
 
-hammerManager.on("panend", (val) => {
+canvasManager.on("panend", (val) => {
   currentPositionOffset.x += val.deltaX;
   currentPositionOffset.y += val.deltaY;
 });
