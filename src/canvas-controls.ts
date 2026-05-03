@@ -1,7 +1,10 @@
 import "hammerjs";
 
+const canvasContainer = document.getElementById("canvas-container") as HTMLElement;
+const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+
 const hammerManager = new Hammer.Manager(
-  document.getElementById("canvas-container") as HTMLElement,
+  canvasContainer
 );
 const pinch = new Hammer.Pinch({
   direction: Hammer.DIRECTION_ALL,
@@ -30,8 +33,6 @@ hammerManager.on("rotatestart", (val) => {
 });
 
 hammerManager.on("pinchmove rotatemove", (val) => {
-  const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-
  canvas.style.transform = `translate(-50%, -50%) rotate(${currentRotation + val.rotation}deg) scale(${currentScale * val.scale})`;
 
 });
@@ -39,4 +40,14 @@ hammerManager.on("pinchmove rotatemove", (val) => {
 hammerManager.on("pinchend rotateend", (val) => {
   currentScale *= val.scale;
   currentRotation += val.rotation;
+});
+
+canvasContainer.addEventListener("wheel", (val) => {
+  if (val.deltaY < 0) {
+    currentScale *= 1.1;
+  } else {
+    currentScale *= 0.9;
+  }
+
+  canvas.style.transform = `translate(-50%, -50%) rotate(${currentRotation}deg) scale(${currentScale})`;
 });
