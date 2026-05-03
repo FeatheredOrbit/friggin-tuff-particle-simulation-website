@@ -1,7 +1,9 @@
 import {GPUEngine} from "./gpu/gpu.ts";
 import { inject } from '@vercel/analytics';
+import { injectSpeedInsights } from '@vercel/speed-insights';
 
 inject();
+injectSpeedInsights();
 
 let gpuEngine: GPUEngine | undefined;
 
